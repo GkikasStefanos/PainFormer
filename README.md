@@ -193,8 +193,7 @@ optimizer = torch.optim.AdamW(list(model.parameters()) + list(head.parameters())
 
 ## Licence & acknowledgements
 
-* Code & weights: **MIT Licence** (placeholder) – see `LICENSE`
-
+* Code & weights: **MIT Licence** – see [`LICENSE`](./LICENSE)
 ---
 
 ## Contact
