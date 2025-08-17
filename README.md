@@ -24,7 +24,7 @@ A Vision Foundation Model for Affective Computing
 <br/>
 
 <p align="center">
-  <img src="docs/painformer_overview.png" alt="PainFormer overview" width="85%"/>
+  <img src="docs/painformer_overview.png" alt="PainFormer overview" width="100%"/>
 </p>
 
 <p align="center"><b>Figure&nbsp;1.</b> PainFormer overview.</p>
@@ -39,14 +39,13 @@ A Vision Foundation Model for Affective Computing
 
 ## Table of Contents
 
-1. [Pre-trained checkpoint](#pre-trained-checkpoint)
-2. [Quick start](#quick-start)
-
-   * [Extract embeddings](#extract-embeddings)
-3. [Fine-tuning](#fine-tuning)
-4. [Citation](#citation)
-5. [Licence & acknowledgements](#licence--acknowledgements)
-6. [Contact](#contact)
+1. [Pre-trained checkpoint](#pre-trained-checkpoint)  
+2. [Quick start](#quick-start)  
+   * [Extract embeddings](#extract-embeddings)  
+3. [Fine-tuning](#fine-tuning)  
+4. [Citation](#citation)  
+5. [Licence & acknowledgements](#licence--acknowledgements)  
+6. [Contact](#contact)  
 
 ---
 
@@ -65,7 +64,7 @@ curl -L -o painformer.pth "$auto"
 
 # optional: verify
 sha256sum painformer.pth
-```
+````
 
 The checkpoint contains **one key**:
 
@@ -84,13 +83,14 @@ model_state_dict    # PainFormer backbone weights
 ```python
 import torch
 from timm.models import create_model
+from architecture import painformer
 from PIL import Image
 from torchvision import transforms
 
 # ---------------------------------------------------------------
 # Setup ---------------------------------------------------------
 # ---------------------------------------------------------------
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = "cuda"
 
 # VGG-Face2 stats used in our experiments
 normalize = transforms.Normalize(
@@ -107,7 +107,7 @@ to_tensor = transforms.Compose([
 # Load PainFormer -----------------------------------------------
 # ---------------------------------------------------------------
 model = create_model('painformer').to(device)
-state = torch.load('./checkpoints/painformer.pth', map_location='cpu')  # expects 'model_state_dict'
+state = torch.load('./checkpoints/painformer.pth', map_location=device)
 model.load_state_dict(state['model_state_dict'], strict=False)
 
 # expose embeddings (remove classification head)
@@ -124,28 +124,29 @@ with torch.no_grad():
     emb = model(x)        # [1, 160]
     emb = emb.squeeze(0)  # [160]
 
-print("Embedding shape:", tuple(emb.shape))  # (160)
+print("Embedding shape:", tuple(emb.shape))  # (160,)
 ```
 
 ---
 
 ## Fine-tuning
 
-Add your own classification/regression head and (optionally) un‑freeze the backbone:
+Add your own classification/regression head and (optionally) un-freeze the backbone:
 
 ```python
 import torch, torch.nn as nn
 from timm.models import create_model
+from architecture import painformer
 
 # ---------------------------------------------------------------
 # Setup ----------------------------------------------------------
 # ---------------------------------------------------------------
-device = 'cuda' if torch.cuda.is_available() else 'cpu'
+device = "cuda"
 num_classes = 3  # set to your task
 
 # Backbone → 160-D embeddings
 model = create_model('painformer').to(device)
-state = torch.load('painformer.pth', map_location='cpu')
+state = torch.load('painformer.pth', map_location=device)
 model.load_state_dict(state['model_state_dict'], strict=False)
 
 # freeze if you only need fixed embeddings
@@ -173,7 +174,10 @@ def step(x, y):
 # --- optional: end-to-end fine-tune ---
 for p in model.parameters():
     p.requires_grad = True
-optimizer = torch.optim.AdamW(list(model.parameters()) + list(head.parameters()), lr=3e-4, weight_decay=0.05)
+optimizer = torch.optim.AdamW(
+    list(model.parameters()) + list(head.parameters()),
+    lr=3e-4, weight_decay=0.05
+)
 ```
 
 ---
@@ -194,6 +198,7 @@ optimizer = torch.optim.AdamW(list(model.parameters()) + list(head.parameters())
 ## Licence & acknowledgements
 
 * Code & weights: **MIT Licence** – see [`LICENSE`](./LICENSE)
+
 ---
 
 ## Contact
