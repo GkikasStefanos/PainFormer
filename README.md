@@ -1,6 +1,6 @@
 # PainFormer
 
-A Vision Foundation Model for Affective Computing and Automatic Pain Assessment
+A Vision Foundation Model for Affective Computing
 
 > **PainFormer v1.0** · **160-D embeddings** · **PyTorch ≥ 2.0**
 
@@ -16,18 +16,24 @@ A Vision Foundation Model for Affective Computing and Automatic Pain Assessment
 
 | Feature                | Description                                               |
 | ---------------------- | --------------------------------------------------------- |
-| **Pre‑training scale** | Multi‑task pre‑training on **14 tasks / 10.9 M samples**. |
-| **Parameters**         | **19.60 M** (PainFormer encoder).                         |
-| **Compute**            | **5.82 GFLOPs** at 224×224 input.                         |
-| **Embeddings**         | Fixed **160‑D** output vectors.                           |
+| **Pre-training scale** | Multi-task pre-training on **14 tasks / 10.9 M samples**. |
+| **Parameters**         | **19.60 M** (PainFormer encoder).                         |
+| **Compute**            | **5.82 GFLOPs** at 224×224 input.                         |
+| **Embeddings**         | Fixed **160-D** output vectors.                           |
 
 <br/>
 
 <p align="center">
-  <img src="docs/painformer_overview.png" alt="PainFormer overview" width="65%"/>
+  <img src="docs/painformer_overview.png" alt="PainFormer overview" width="85%"/>
 </p>
 
-<p align="center"><b>Figure&nbsp;1.</b> PainFormer overview (placeholder).</p>
+<p align="center"><b>Figure&nbsp;1.</b> PainFormer overview.</p>
+
+<p align="center">
+  <img src="docs/painformer_architecture.png" alt="PainFormer architecture" width="100%"/>
+</p>
+
+<p align="center"><b>Figure&nbsp;2.</b> PainFormer architecture.</p>
 
 ---
 
@@ -46,15 +52,15 @@ A Vision Foundation Model for Affective Computing and Automatic Pain Assessment
 
 ## Pre-trained checkpoint
 
-Get the weights from the **[GitHub Releases](https://github.com/your-org/PainFormer/releases)** (placeholder).
+Get the weights from the **[GitHub Releases](https://github.com/GkikasStefanos/PainFormer/releases)**.
 
 | File             | Size    |
 | ---------------- | ------- |
 | `painformer.pth` | **TBA** |
 
 ```bash
-# download the latest checkpoint (placeholder)
-auto=https://github.com/your-org/PainFormer/releases/latest/download/painformer.pth
+# download the latest checkpoint
+auto=https://github.com/GkikasStefanos/PainFormer/releases/latest/download/painformer.pth
 curl -L -o painformer.pth "$auto"
 
 # optional: verify
@@ -125,83 +131,49 @@ print("Embedding shape:", tuple(emb.shape))  # (160)
 
 ## Fine-tuning
 
+Add your own classification/regression head and (optionally) un‑freeze the backbone:
+
 ```python
 import torch, torch.nn as nn
 from timm.models import create_model
-from torchvision import datasets, transforms
-from torch.utils.data import DataLoader
 
 # ---------------------------------------------------------------
-# Config ---------------------------------------------------------
+# Setup ----------------------------------------------------------
 # ---------------------------------------------------------------
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-num_classes = 3   # set to your task
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+num_classes = 3  # set to your task
 
-normalize = transforms.Normalize(
-    mean=[0.6068, 0.4517, 0.3800],
-    std=[0.2492, 0.2173, 0.2082]
-)
-train_tf = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.RandomHorizontalFlip(),
-    transforms.ToTensor(),
-    normalize
-])
-val_tf = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    normalize
-])
-
-train_set = datasets.ImageFolder('/path/to/train', transform=train_tf)
-val_set   = datasets.ImageFolder('/path/to/val',   transform=val_tf)
-train_loader = DataLoader(train_set, batch_size=64, shuffle=True,  num_workers=8, pin_memory=True)
-val_loader   = DataLoader(val_set,   batch_size=64, shuffle=False, num_workers=8, pin_memory=True)
-
-# ---------------------------------------------------------------
-# Model ----------------------------------------------------------
-# ---------------------------------------------------------------
+# Backbone → 160-D embeddings
 model = create_model('painformer').to(device)
-state = torch.load('./checkpoints/painformer.pth', map_location='cpu')
+state = torch.load('painformer.pth', map_location='cpu')
 model.load_state_dict(state['model_state_dict'], strict=False)
 
-# replace classifier to match downstream labels (PainFormer → 160-D)
-model.head = nn.Linear(160, num_classes)
+# freeze if you only need fixed embeddings
+for p in model.parameters():
+    p.requires_grad = False
+
+# simple head (example)
+head = nn.Sequential(
+    nn.ELU(),
+    nn.Linear(160, num_classes)
+).to(device)
+
+optimizer = torch.optim.Adam(head.parameters(), lr=1e-3)
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=0.05)
-scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=50)
 
-# ---------------------------------------------------------------
-# Train / Validate ----------------------------------------------
-# ---------------------------------------------------------------
-best = 0.0
-for epoch in range(50):
-    model.train()
-    for xb, yb in train_loader:
-        xb, yb = xb.to(device), yb.to(device)
-        logits = model(xb)
-        loss = criterion(logits, yb)
-        optimizer.zero_grad(set_to_none=True)
-        loss.backward()
-        optimizer.step()
-    scheduler.step()
-
-    # validation
+# one step (sketch)
+def step(x, y):
     model.eval()
-    correct, total = 0, 0
     with torch.no_grad():
-        for xb, yb in val_loader:
-            xb, yb = xb.to(device), yb.to(device)
-            pred = model(xb).argmax(1)
-            correct += (pred == yb).sum().item()
-            total   += yb.size(0)
-    acc = correct / max(total, 1)
+        z = model(x)      # [B, 160]
+    logits = head(z)      # [B, C]
+    loss = criterion(logits, y)
+    return loss, logits
 
-    # save best
-    if acc > best:
-        best = acc
-        torch.save({'model_state_dict': model.state_dict()}, './checkpoints/painformer_finetuned.pth')
-    print(f"epoch {epoch:02d} | val acc {acc:.4f}")
+# --- optional: end-to-end fine-tune ---
+for p in model.parameters():
+    p.requires_grad = True
+optimizer = torch.optim.AdamW(list(model.parameters()) + list(head.parameters()), lr=3e-4, weight_decay=0.05)
 ```
 
 ---
