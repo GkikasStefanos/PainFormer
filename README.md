@@ -2,7 +2,7 @@
 
 A Vision Foundation Model for Affective Computing
 
-> **PainFormer v1.0** · **160-D embeddings** · **PyTorch ≥ 2.0**
+> **PainFormer** · **19.60 M parameters** · **5.82 GFLOPs** · **160-D embeddings** · **PyTorch ≥ 2.0**
 
 ---
 
