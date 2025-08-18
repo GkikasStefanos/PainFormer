@@ -49,7 +49,7 @@ A Vision Foundation Model for Affective Computing
 
 ---
 
-## Pre-trained checkpoint
+## Pre-trained Weights
 
 Get the weights from the **[GitHub Releases](https://github.com/GkikasStefanos/PainFormer/releases)**.
 
