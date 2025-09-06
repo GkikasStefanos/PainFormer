@@ -8,7 +8,7 @@ A Vision Foundation Model for Affective Computing
 
 ## Paper
 
-[**PainFormer: A Vision Foundation Model for Automatic Pain Assessment**](https://arxiv.org/abs/XXXX.XXXXX)
+[**PainFormer: A Vision Foundation Model for Automatic Pain Assessment**](https://ieeexplore.ieee.org/document/11150483)
 
 ---
 
