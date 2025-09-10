@@ -92,7 +92,7 @@ from torchvision import transforms
 # ---------------------------------------------------------------
 device = "cuda"
 
-# VGG-Face2 stats used in our experiments
+# VGG-Face2's statistical values have been used for the pretraining of the model
 normalize = transforms.Normalize(
     mean=[0.6068, 0.4517, 0.3800],
     std=[0.2492, 0.2173, 0.2082]
@@ -185,12 +185,18 @@ optimizer = torch.optim.AdamW(
 ## Citation
 
 ```bibtex
-@article{gkikas2025painformer,
-  title   = {PainFormer: A Vision Foundation Model for Automatic Pain Assessment},
-  author  = {Gkikas, Stefanos and Rojas, Raul Fernandez and Tsiknakis, Manolis},
-  journal = {to appear},
-  year    = {2025}
+@ARTICLE{gkikas_painformer_2025,
+  author={Gkikas, Stefanos and Rojas, Raul Fernandez and Tsiknakis, Manolis},
+  journal={IEEE Transactions on Affective Computing}, 
+  title={PainFormer: a Vision Foundation Model for Automatic Pain Assessment}, 
+  year={2025},
+  volume={},
+  number={},
+  pages={1-18},
+  keywords={Pain;Videos;Accuracy;Foundation models;Feature extraction;Electrocardiography;Biomedical monitoring;Physiology;Monitoring;Costs;Pain recognition;deep learning;transformers;multi-task learning;multimodal;synthetic data;data fusion},
+  doi={10.1109/TAFFC.2025.3605475}
 }
+
 ```
 
 ---
