@@ -209,4 +209,4 @@ optimizer = torch.optim.AdamW(
 
 ## Contact
 
-Email **Stefanos Gkikas** ([gkikas@ics.forth.gr](mailto:gkikas@ics.forth.gr)).
+Email **Stefanos Gkikas:** gkikas［at］ics［dot］forth［dot］gr ／ gikasstefanos［at］gmail［dot］com
