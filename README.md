@@ -193,7 +193,6 @@ optimizer = torch.optim.AdamW(
   volume={},
   number={},
   pages={1-18},
-  keywords={Pain;Videos;Accuracy;Foundation models;Feature extraction;Electrocardiography;Biomedical monitoring;Physiology;Monitoring;Costs;Pain recognition;deep learning;transformers;multi-task learning;multimodal;synthetic data;data fusion},
   doi={10.1109/TAFFC.2025.3605475}
 }
 
