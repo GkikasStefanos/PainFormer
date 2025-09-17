@@ -55,7 +55,7 @@ Get the weights from the **[GitHub Releases](https://github.com/GkikasStefanos/P
 
 | File             | Size    |
 | ---------------- | ------- |
-| `painformer.pth` | **TBA** |
+| `painformer.pth` | **75 MB** |
 
 ```bash
 # download the latest checkpoint
